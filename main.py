@@ -23,6 +23,10 @@ def get_db():
 def root():
     return {"message": "Welcome to the Task Management API! Go to /docs for the Swagger UI."}
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "message": "API is healthy and CI/CD Pipeline is working perfectly! 🚀"}
+
 @app.post("/tasks/", response_model=schemas.Task)
 def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     db_task = models.Task(title=task.title, description=task.description, completed=task.completed)
