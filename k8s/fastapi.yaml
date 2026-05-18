@@ -15,7 +15,7 @@ spec:
       containers:
         - name: fastapi
           image: fastapiacreastus.azurecr.io/task-api:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: DATABASE_URL
               value: "postgresql://myuser:mypassword@db:5432/taskdb"
