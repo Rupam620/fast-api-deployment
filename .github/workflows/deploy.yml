@@ -1,0 +1,42 @@
+name: Build and Deploy to AKS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ACR_NAME: fastapiacreastus
+  AKS_CLUSTER: fastapi-aks-eastus2
+  RG_NAME: fastapi-rg-eastus
+  IMAGE_NAME: task-api
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Login to ACR
+      run: az acr login --name ${{ env.ACR_NAME }}
+
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest .
+        docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+
+    - name: Get AKS Credentials
+      run: az aks get-credentials --resource-group ${{ env.RG_NAME }} --name ${{ env.AKS_CLUSTER }}
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f k8s/postgres.yaml
+        kubectl apply -f k8s/fastapi.yaml
+        kubectl rollout restart deployment fastapi-deployment

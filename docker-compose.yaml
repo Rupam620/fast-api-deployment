@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: taskdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/taskdb
+    depends_on:
+      - db
+    # The volumes command here maps your local code to the container, 
+    # so you don't have to rebuild the image every time you change a file locally.
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
